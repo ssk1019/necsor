@@ -30,6 +30,13 @@ Full-stack web application designed for high throughput, strong concurrency, and
 - **Linting:** @nuxt/eslint
 - **Package Manager:** npm
 
+## Git 倉庫
+
+- **GitHub:** https://github.com/ssk1019/necsor.git
+- **Remote:** origin
+- **主分支:** main
+- 當使用者要求 push 時，直接執行 `git push origin main`（或推送至對應分支）
+
 ## Architecture Principles
 
 1. **Separation of concerns** — API routes, business logic (services), data models, and schemas are in distinct layers.

@@ -1,64 +1,24 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
 
-# testing
-/coverage
+# Node dependencies
+node_modules
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
+# Logs
+logs
 *.log
-.idea/
-.vscode/
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Misc
+.DS_Store
+.fleet
+.idea
 
-# local env files
-.env*.local
+# Local env files
 .env
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# storybook
-storybook-static
-
-# cypress
-cypress/videos
-cypress/screenshots
-
-# jest
-.jest/
-test-report.xml
-junit.xml
-
-# lock files (keep package-lock.json but ignore others if you strictly use npm)
-# yarn.lock
-# pnpm-lock.yaml
-
-# OS generated files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msm
-*.msp
+.env.*
+!.env.example

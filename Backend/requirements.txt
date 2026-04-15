@@ -1,7 +1,33 @@
-fastapi>=0.100.0
-uvicorn[standard]>=0.23.0
-motor>=3.3.0
-redis>=5.0.0
-pydantic-settings>=2.0.0
-python-dotenv>=1.0.0
-gunicorn>=21.2.0
+# Web Framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+
+# MongoDB
+motor==3.7.1
+beanie==1.29.0
+
+# Redis
+redis[hiredis]==5.3.0
+
+# Configuration & Environment
+pydantic-settings==2.9.1
+python-dotenv==1.1.0
+
+# Authentication & Security
+python-jose[cryptography]==3.4.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+
+# CORS & Middleware
+starlette==0.46.2
+
+# HTTP Client
+httpx==0.28.1
+
+# Logging
+loguru==0.7.3
+
+# Testing
+pytest==8.3.5
+pytest-asyncio==0.26.0
+httpx==0.28.1

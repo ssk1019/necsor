@@ -10,29 +10,38 @@ fileMatchPattern: "Backend/**"
 ```
 Backend/
 ├── app/
-│   ├── api/                  # HTTP layer
-│   │   ├── deps.py           # Shared FastAPI dependencies (get_db, get_cache)
+│   ├── api/                  # HTTP 層
+│   │   ├── deps.py           # 共用 FastAPI 依賴注入 (get_db, get_cache)
 │   │   └── v1/
-│   │       ├── router.py     # Aggregates all v1 endpoint routers
-│   │       └── endpoints/    # One file per resource (health.py, users.py, etc.)
-│   ├── core/                 # Cross-cutting infrastructure
-│   │   ├── config.py         # Settings singleton (pydantic-settings from .env)
-│   │   ├── database.py       # MongoDB + Redis connect/close/get helpers
-│   │   ├── logging.py        # loguru setup
-│   │   └── security.py       # JWT create/decode, password hash/verify
-│   ├── middleware/            # Custom ASGI middleware
-│   ├── models/               # MongoDB document models (Beanie / Pydantic)
-│   │   └── base.py           # TimestampMixin (created_at, updated_at)
-│   ├── schemas/              # Pydantic request/response schemas
-│   │   └── common.py         # ResponseBase[T], PaginatedResponse[T]
-│   ├── services/             # Business logic (one file per domain)
-│   ├── utils/                # Shared helpers
-│   │   └── cache.py          # cache_get / cache_set / cache_delete
-│   └── main.py               # App factory + lifespan (startup/shutdown)
-├── tests/                    # pytest test files
-├── .env                      # Local environment variables (not committed)
-├── .env.example              # Template for .env
-└── requirements.txt          # Pinned dependencies
+│   │       ├── router.py     # 聚合所有 v1 端點路由
+│   │       └── endpoints/    # 每個資源一個檔案 (health.py, scheduler.py 等)
+│   ├── core/                 # 跨模組基礎設施
+│   │   ├── config.py         # 設定單例 (pydantic-settings)
+│   │   ├── database.py       # MongoDB + Redis 連線管理
+│   │   ├── logging.py        # loguru 設定
+│   │   └── security.py       # JWT / 密碼雜湊
+│   ├── middleware/            # 自訂 ASGI 中間件
+│   ├── models/               # MongoDB 文件模型
+│   │   ├── base.py           # TimestampMixin
+│   │   └── scheduler.py      # 排程任務模型 (ScheduleJob, JobExecutionLog)
+│   ├── schemas/              # Pydantic 請求/回應 Schema
+│   │   ├── common.py         # ResponseBase[T], PaginatedResponse[T]
+│   │   └── scheduler.py      # 排程 CRUD Schema
+│   ├── scheduler/            # 排程引擎
+│   │   ├── constants.py      # 集合名稱與預設值常數
+│   │   ├── engine.py         # 排程主引擎 (SchedulerEngine)
+│   │   ├── registry.py       # 任務註冊器 (@register_task 裝飾器)
+│   │   ├── utils.py          # 共用工具（cron 計算等）
+│   │   └── tasks/            # 排程任務實作
+│   │       ├── __init__.py   # 匯入所有任務模組
+│   │       └── example_tasks.py  # 範例任務
+│   ├── services/             # 業務邏輯層
+│   ├── utils/                # 共用工具
+│   │   └── cache.py          # Redis 快取工具
+│   └── main.py               # 應用程式入口 + 生命週期管理
+├── tests/
+├── .env / .env.example
+└── requirements.txt
 ```
 
 ## Conventions
@@ -83,3 +92,42 @@ pytest
 | python-jose 3.4.0 | JWT tokens |
 | passlib 1.7.4 | Password hashing (bcrypt) |
 | loguru 0.7.3 | Logging |
+| croniter 5.0.1 | Cron 表達式解析（排程引擎） |
+
+## 排程器
+
+排程引擎在 FastAPI 啟動時自動載入，從 MongoDB `schedule_jobs` 集合讀取排程設定。
+
+### 新增爬蟲任務步驟
+
+1. 在 `scheduler/tasks/` 建立新的 `.py` 檔
+2. 使用 `@register_task("task_type")` 裝飾器註冊
+3. 在 `scheduler/tasks/__init__.py` 加入 import
+4. 透過 API 或直接在 MongoDB 建立排程設定
+
+### 任務函式規範
+
+```python
+@register_task("my_crawler")
+async def my_crawler(params: dict) -> str:
+    # params 來自 ScheduleJob.task_params
+    # 回傳 str 作為執行結果摘要
+    # 拋出例外表示失敗（會觸發重試）
+    return "完成"
+```
+
+### 排程 API
+
+- `GET    /api/v1/scheduler`              — 列出所有排程
+- `GET    /api/v1/scheduler/task-types`   — 列出已註冊任務類型
+- `GET    /api/v1/scheduler/{job_id}`     — 取得單一排程
+- `POST   /api/v1/scheduler`             — 建立排程
+- `PUT    /api/v1/scheduler/{job_id}`     — 更新排程
+- `DELETE /api/v1/scheduler/{job_id}`     — 刪除排程
+- `POST   /api/v1/scheduler/{job_id}/trigger` — 手動觸發
+- `GET    /api/v1/scheduler/{job_id}/logs`    — 查詢執行紀錄
+
+### MongoDB 集合
+
+- `schedule_jobs` — 排程任務設定
+- `job_execution_logs` — 執行紀錄

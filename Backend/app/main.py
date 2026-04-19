@@ -14,6 +14,12 @@ from app.core.database import (
 )
 from app.core.logging import setup_logging
 from app.api.v1.router import api_router
+from app.models.daily_market import ensure_daily_market_indexes
+from app.models.twse_institutional import ensure_twse_institutional_indexes
+from app.models.tpex_institutional import ensure_tpex_institutional_indexes
+from app.models.margin_trading import ensure_margin_trading_indexes
+from app.models.futures_oi import ensure_futures_oi_indexes
+from app.models.futures_institutional import ensure_futures_institutional_indexes
 from app.scheduler.engine import SchedulerEngine
 
 settings = get_settings()
@@ -32,6 +38,14 @@ async def lifespan(app: FastAPI):
     logger.info(f"啟動 {settings.APP_NAME} ({settings.APP_ENV})...")
     await connect_mongodb()
     await connect_redis()
+
+    # 建立 MongoDB 索引
+    await ensure_daily_market_indexes(get_database())
+    await ensure_twse_institutional_indexes(get_database())
+    await ensure_tpex_institutional_indexes(get_database())
+    await ensure_margin_trading_indexes(get_database())
+    await ensure_futures_oi_indexes(get_database())
+    await ensure_futures_institutional_indexes(get_database())
 
     # 載入任務模組（觸發 @register_task 裝飾器）
     import app.scheduler.tasks  # noqa: F401

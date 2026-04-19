@@ -12,6 +12,7 @@
 
 # 匯入所有任務模組，觸發裝飾器註冊
 from app.scheduler.tasks import example_tasks  # noqa: F401
+from app.scheduler.tasks import twse_tasks     # noqa: F401
 
 # 未來新增爬蟲時，在這裡加一行 import 即可：
 # from app.scheduler.tasks import stock_crawler  # noqa: F401

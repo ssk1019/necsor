@@ -8,7 +8,15 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@vueuse/nuxt",
     "@nuxt/eslint",
+    "@nuxtjs/color-mode",
   ],
+
+  // 深色模式設定
+  colorMode: {
+    preference: "dark",      // 預設深色
+    fallback: "dark",
+    classSuffix: "",         // 使用 .dark 而非 .dark-mode
+  },
 
   // Runtime config (env variables)
   runtimeConfig: {

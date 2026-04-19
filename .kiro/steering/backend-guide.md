@@ -1,6 +1,7 @@
 ---
 inclusion: fileMatch
 fileMatchPattern: "Backend/**"
+description: "後端目錄結構、開發慣例、排程任務、資料表、API、外部資料來源"
 ---
 
 # Backend 開發指南

@@ -1,5 +1,6 @@
 ---
 inclusion: auto
+description: "Necsor 專案技術棧、架構原則、功能總覽、Git 倉庫資訊"
 ---
 
 # 專案概覽 — Necsor

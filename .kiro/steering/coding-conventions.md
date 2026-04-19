@@ -1,5 +1,6 @@
 ---
 inclusion: auto
+description: "繁體中文語言偏好與文件維護規範"
 ---
 
 # 編碼慣例

@@ -1,6 +1,7 @@
 ---
 inclusion: fileMatch
 fileMatchPattern: "Frontend/**"
+description: "前端目錄結構、開發慣例、圖表元件、深色模式、Nuxt 模組與套件"
 ---
 
 # Frontend 開發指南

@@ -3,80 +3,95 @@ inclusion: fileMatch
 fileMatchPattern: "Frontend/**"
 ---
 
-# Frontend Development Guide
+# Frontend 開發指南
 
-## Directory Structure
+## 目錄結構
 
 ```
 Frontend/
 ├── assets/scss/
-│   ├── _variables.scss       # Design tokens (colors, fonts, breakpoints, shadows)
-│   └── main.scss             # Global reset + base styles
+│   ├── _variables.scss       # 設計變數（顏色、字型、斷點、圓角、陰影）
+│   ├── _chart-card.scss      # 圖表卡片共用樣式（支援深色模式）
+│   └── main.scss             # 全域樣式 + CSS 變數（淺色/深色兩組）
 ├── components/
-│   └── ui/                   # Reusable UI components (AppButton, etc.)
+│   ├── ui/                   # 通用 UI 元件
+│   │   └── AppButton.vue
+│   └── chart/                # 圖表元件（皆為 .client.vue，僅客戶端渲染）
+│       ├── InstitutionalChart.client.vue      # 三大法人長條圖
+│       ├── MarginChart.client.vue             # 融資融券曲線圖
+│       ├── FuturesOIChart.client.vue          # 台指期混合圖
+│       └── FuturesInstitutionalChart.client.vue # 期貨三大法人長條圖
 ├── composables/
-│   └── useApi.ts             # API call wrapper (uses runtimeConfig.public.apiBase)
+│   ├── useApi.ts             # 通用 API 封裝
+│   ├── useMarketApi.ts       # 市場資料 API（三大法人、融資融券、台指期）
+│   └── useChartTheme.ts      # 圖表深色模式配色
 ├── layouts/
-│   └── default.vue           # Default page layout (header/main/footer)
-├── middleware/                # Route middleware (auth guards, etc.)
-├── pages/                    # File-based routing
-│   └── index.vue             # Home page
-├── plugins/                  # Nuxt plugins (runs on app init)
-├── public/                   # Static assets (favicon, robots.txt)
-├── server/                   # Nitro server routes (API proxy, SSR helpers)
+│   └── default.vue           # 預設版面（導覽列 + 深色模式切換按鈕）
+├── middleware/                # 路由中間件
+├── pages/
+│   ├── index.vue             # 首頁
+│   └── market.vue            # 市場總覽（5 個圖表）
+├── plugins/                  # Nuxt 插件
+├── public/                   # 靜態資源
+├── server/                   # Nitro 伺服器路由
 ├── stores/
-│   └── app.ts                # Pinia global store (isLoading, sidebarOpen)
+│   └── app.ts                # Pinia 全域狀態
 ├── types/
-│   └── index.ts              # Shared TS types (ApiResponse, PaginatedResponse)
-├── .env                      # Environment variables (NUXT_PUBLIC_API_BASE)
-├── .env.example              # Template
-├── .nuxtrc                   # Nuxt local config (telemetry disabled)
-├── nuxt.config.ts            # Nuxt configuration
-├── package.json              # Dependencies + scripts
-└── tsconfig.json             # TypeScript config
+│   └── index.ts              # 共用 TypeScript 型別
+├── .env / .env.example
+├── .nuxtrc                   # Nuxt 本地設定（telemetry 已關閉）
+├── nuxt.config.ts            # Nuxt 設定
+└── package.json
 ```
 
-## Conventions
+## 開發慣例
 
-- **Components:** Place reusable UI components in `components/ui/`. Feature-specific components go in `components/<feature>/`. Nuxt auto-imports all components.
+- **元件：** 通用 UI 放 `components/ui/`，功能元件放 `components/<feature>/`
+- **圖表元件：** 使用 `.client.vue` 後綴（Chart.js 依賴 Canvas，無法 SSR）
+- **圖表樣式：** 卡片樣式統一用 `@use "~/assets/scss/chart-card"`，配色用 `useChartTheme()` composable
+- **Composables：** 放 `composables/`，Nuxt 自動匯入
+- **頁面：** 檔案路由，`pages/about.vue` → `/about`
+- **深色模式：** 用 CSS 變數（`var(--bg-card)` 等），定義在 `main.scss` 的 `:root` 和 `.dark`
+- **API 呼叫：** 市場資料用 `useMarketApi()`，通用用 `useApi()`
 
-- **Composables:** Place shared logic in `composables/`. Nuxt auto-imports them. Use `useApi()` for backend calls.
+## 深色模式
 
-- **Pages:** File-based routing. `pages/about.vue` → `/about`. Dynamic routes: `pages/users/[id].vue`.
+- 模組：`@nuxtjs/color-mode`
+- 預設：深色（`preference: "dark"`）
+- 切換按鈕：導覽列右側 ☀️/🌙
+- 偏好自動存入 localStorage
+- CSS 變數定義在 `main.scss`，`.dark` class 覆蓋淺色值
 
-- **Stores:** One Pinia store per domain in `stores/`. Use `defineStore()` with Nuxt auto-import.
-
-- **Styling:** Global SCSS variables from `_variables.scss` are injected into all components via `nuxt.config.ts` `vite.css.preprocessorOptions`. Use `<style lang="scss" scoped>` in components.
-
-- **Types:** Backend response types are mirrored in `types/index.ts` (ApiResponse, PaginatedResponse).
-
-- **API calls:** Use the `useApi()` composable which prepends `runtimeConfig.public.apiBase`. For server-side calls, use `$fetch` directly.
-
-## Running
+## 啟動方式
 
 ```bash
-# Development (http://localhost:3000)
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+npm run dev          # http://localhost:3000
+npm run build        # 正式建置
+npm run preview      # 預覽正式建置
 ```
 
-**Note:** Nuxt telemetry has been disabled (via `.nuxtrc`) to prevent interactive prompts from blocking the dev server. If telemetry prompt reappears after updates, run `npx nuxt telemetry disable` in `Frontend/`.
+**注意：** Nuxt telemetry 已關閉（`.nuxtrc`）。若提示重新出現，執行 `npx nuxt telemetry disable`。
 
-## Nuxt Modules Installed
+## Nuxt 模組
 
-| Module | Purpose |
-|--------|---------|
-| @pinia/nuxt | State management |
-| @vueuse/nuxt | Vue composition utilities |
-| @nuxt/eslint | Linting |
+| 模組 | 用途 |
+|------|------|
+| @pinia/nuxt | 狀態管理 |
+| @vueuse/nuxt | Vue 組合式工具 |
+| @nuxt/eslint | 程式碼檢查 |
+| @nuxtjs/color-mode | 深色/淺色模式 |
 
-## Environment Variables
+## 前端套件
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| NUXT_PUBLIC_API_BASE | http://localhost:8000/api/v1 | Backend API base URL |
+| 套件 | 用途 |
+|------|------|
+| chart.js | 圖表繪製引擎 |
+| vue-chartjs | Chart.js 的 Vue 封裝 |
+| sass-embedded | SCSS 編譯 |
+| ofetch | HTTP 客戶端 |
+
+## 環境變數
+
+| 變數 | 預設值 | 說明 |
+|------|--------|------|
+| NUXT_PUBLIC_API_BASE | http://localhost:8000/api/v1 | 後端 API 基礎 URL |

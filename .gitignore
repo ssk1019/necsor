@@ -6,6 +6,7 @@ Backend/*.py[cod]
 Backend/.env
 Backend/logs/
 Backend/.pytest_cache/
+Backend/db_dumps/
 
 # === Frontend ===
 Frontend/node_modules/

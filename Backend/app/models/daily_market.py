@@ -59,6 +59,12 @@ class DailyMarketFetch(BaseModel):
         description="台指期未平倉是否已抓取（None=未抓, True=已抓, False=抓取失敗）",
     )
 
+    # === 台股指數與匯率 ===
+    taiex_exchange: Optional[bool] = Field(
+        default=None,
+        description="台股指數與匯率是否已抓取（None=未抓, True=已抓, False=抓取失敗）",
+    )
+
     # === 期貨三大法人未平倉 ===
     futures_institutional: Optional[bool] = Field(
         default=None,

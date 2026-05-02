@@ -108,3 +108,22 @@ async def get_futures_institutional(
     data.reverse()
 
     return {"success": True, "data": data, "total": len(data)}
+
+
+@router.get("/taiex-exchange", summary="台股加權指數與匯率歷史資料")
+async def get_taiex_exchange(
+    days: int = Query(default=None, ge=1, le=365, description="查詢天數"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    """取得台股加權指數與匯率歷史資料（依日期升冪）。"""
+    settings = get_settings()
+    limit = days or settings.CHART_DEFAULT_DAYS
+
+    cursor = db["taiex_exchange"].find(
+        {}, {"_id": 0}
+    ).sort("date", -1).limit(limit)
+
+    data = await cursor.to_list(length=limit)
+    data.reverse()
+
+    return {"success": True, "data": data, "total": len(data)}

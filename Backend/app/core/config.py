@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     # 期貨三大法人未平倉：回溯補抓天數
     FUTURES_INSTITUTIONAL_BACKFILL_DAYS: int = 5
 
+    # 台股指數與匯率：回溯補抓天數
+    TAIEX_EXCHANGE_BACKFILL_DAYS: int = 5
+
     # FinMind API
     FINMIND_API_TOKEN: str = ""
 

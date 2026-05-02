@@ -2,8 +2,18 @@
   <div class="market-page">
     <div class="page-header">
       <h1 class="page-title">市場總覽</h1>
-      <p class="page-subtitle">三大法人買賣金額 ・ 融資融券餘額 ・ 台指期未平倉 ・ 期貨三大法人</p>
+      <p class="page-subtitle">三大法人買賣金額 ・ 融資融券餘額 ・ 台指期未平倉 ・ 期貨三大法人 ・ 台股vs匯率</p>
     </div>
+
+    <!-- 台股 vs 匯率 -->
+    <section class="chart-section">
+      <ChartTaiexExchangeChart
+        title="💱 台股加權指數 vs USD/TWD 匯率"
+        :records="taiexData"
+        :selected-days="taiexDays"
+        @change-days="changeTaiexDays"
+      />
+    </section>
 
     <!-- 上市三大法人 -->
     <section class="chart-section">
@@ -66,22 +76,24 @@
 </template>
 
 <script setup lang="ts">
-import type { InstitutionalRecord, MarginRecord, FuturesOIRecord, FuturesInstitutionalRecord } from "~/composables/useMarketApi";
+import type { InstitutionalRecord, MarginRecord, FuturesOIRecord, FuturesInstitutionalRecord, TaiexExchangeRecord } from "~/composables/useMarketApi";
 
 useHead({ title: "市場總覽 — Necsor" });
 
-const { fetchInstitutional, fetchMargin, fetchFuturesOI, fetchFuturesInstitutional } = useMarketApi();
+const { fetchInstitutional, fetchMargin, fetchFuturesOI, fetchFuturesInstitutional, fetchTaiexExchange } = useMarketApi();
 
 const twseDays = ref(30);
 const tpexDays = ref(30);
 const marginDays = ref(30);
 const futuresDays = ref(30);
 const futuresInstDays = ref(30);
+const taiexDays = ref(60);
 const twseData = ref<InstitutionalRecord[]>([]);
 const tpexData = ref<InstitutionalRecord[]>([]);
 const marginData = ref<MarginRecord[]>([]);
 const futuresData = ref<FuturesOIRecord[]>([]);
 const futuresInstData = ref<FuturesInstitutionalRecord[]>([]);
+const taiexData = ref<TaiexExchangeRecord[]>([]);
 
 const loadTwse = async () => {
   try {
@@ -148,12 +160,26 @@ const changeFuturesInstDays = (days: number) => {
   loadFuturesInst();
 };
 
+const loadTaiex = async () => {
+  try {
+    taiexData.value = await fetchTaiexExchange(taiexDays.value);
+  } catch (e) {
+    console.error("載入台股指數匯率失敗", e);
+  }
+};
+
+const changeTaiexDays = (days: number) => {
+  taiexDays.value = days;
+  loadTaiex();
+};
+
 onMounted(() => {
   loadTwse();
   loadTpex();
   loadMargin();
   loadFutures();
   loadFuturesInst();
+  loadTaiex();
 });
 </script>
 

@@ -57,11 +57,33 @@ export interface FuturesInstitutionalItem {
   net_oi_amount: number;
 }
 
-export interface FuturesInstitutionalRecord {
-  date: string;
+export interface FuturesProductData {
   dealer?: FuturesInstitutionalItem;
   investment_trust?: FuturesInstitutionalItem;
   foreign_investor?: FuturesInstitutionalItem;
+}
+
+export interface FuturesInstitutionalRecord {
+  date: string;
+  TX?: FuturesProductData;
+  MTX?: FuturesProductData;
+  TE?: FuturesProductData;
+  TF?: FuturesProductData;
+  XIF?: FuturesProductData;
+  // 向下相容舊資料（只有 TX）
+  dealer?: FuturesInstitutionalItem;
+  investment_trust?: FuturesInstitutionalItem;
+  foreign_investor?: FuturesInstitutionalItem;
+}
+
+export interface TaiexExchangeRecord {
+  date: string;
+  taiex_open?: number;
+  taiex_high?: number;
+  taiex_low?: number;
+  taiex_close?: number;
+  usd_twd_buy?: number;
+  usd_twd_sell?: number;
 }
 
 export function useMarketApi() {
@@ -103,5 +125,13 @@ export function useMarketApi() {
     return res.data;
   };
 
-  return { fetchInstitutional, fetchMargin, fetchFuturesOI, fetchFuturesInstitutional };
+  const fetchTaiexExchange = async (days: number = 30): Promise<TaiexExchangeRecord[]> => {
+    const res = await $fetch<{ success: boolean; data: TaiexExchangeRecord[] }>(
+      `${baseUrl}/market/taiex-exchange`,
+      { params: { days } }
+    );
+    return res.data;
+  };
+
+  return { fetchInstitutional, fetchMargin, fetchFuturesOI, fetchFuturesInstitutional, fetchTaiexExchange };
 }

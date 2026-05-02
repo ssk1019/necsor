@@ -21,7 +21,8 @@ Frontend/
 │       ├── InstitutionalChart.client.vue      # 三大法人長條圖
 │       ├── MarginChart.client.vue             # 融資融券曲線圖
 │       ├── FuturesOIChart.client.vue          # 台指期混合圖
-│       └── FuturesInstitutionalChart.client.vue # 期貨三大法人長條圖
+│       ├── FuturesInstitutionalChart.client.vue # 期貨三大法人長條圖（含 5 種商品 Tab）
+│       └── TaiexExchangeChart.client.vue      # 台股加權指數 vs 匯率曲線圖
 ├── composables/
 │   ├── useApi.ts             # 通用 API 封裝
 │   ├── useMarketApi.ts       # 市場資料 API（三大法人、融資融券、台指期）
@@ -31,7 +32,7 @@ Frontend/
 ├── middleware/                # 路由中間件
 ├── pages/
 │   ├── index.vue             # 首頁
-│   └── market.vue            # 市場總覽（5 個圖表）
+│   └── market.vue            # 市場總覽（6 個圖表）
 ├── plugins/                  # Nuxt 插件
 ├── public/                   # 靜態資源
 ├── server/                   # Nitro 伺服器路由

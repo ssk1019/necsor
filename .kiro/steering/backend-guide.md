@@ -33,7 +33,8 @@ Backend/
 │   │   ├── tpex_institutional.py    # 上櫃三大法人
 │   │   ├── margin_trading.py        # 融資融券餘額
 │   │   ├── futures_oi.py            # 台指期未平倉
-│   │   └── futures_institutional.py # 期貨三大法人未平倉
+│   │   ├── futures_institutional.py # 期貨三大法人未平倉（TX/MTX/TE/TF/XIF）
+│   │   └── taiex_exchange.py        # 台股加權指數與匯率
 │   ├── schemas/              # Pydantic 請求/回應 Schema
 │   │   ├── common.py         # ResponseBase[T], PaginatedResponse[T]
 │   │   └── scheduler.py      # 排程 CRUD Schema
@@ -52,7 +53,8 @@ Backend/
 │   │   ├── tpex_institutional.py     # 上櫃三大法人抓取
 │   │   ├── margin_trading.py         # 融資融券餘額抓取
 │   │   ├── futures_oi.py             # 台指期未平倉抓取
-│   │   └── futures_institutional.py  # 期貨三大法人未平倉抓取
+│   │   ├── futures_institutional.py  # 期貨三大法人未平倉抓取
+│   │   └── taiex_exchange.py         # 台股加權指數與匯率抓取
 │   ├── utils/
 │   │   ├── cache.py          # Redis 快取工具
 │   │   └── time.py           # 時間工具（now_taipei, now_log_prefix）
@@ -101,7 +103,8 @@ Backend/
 | `tpex_institutional` | 上櫃三大法人買賣金額 | date（唯一降冪） |
 | `margin_trading` | 融資融券餘額 | date（唯一降冪） |
 | `futures_open_interest` | 台指期各合約未平倉口數 | date（唯一降冪） |
-| `futures_institutional` | 期貨三大法人未平倉餘額 | date（唯一降冪） |
+| `futures_institutional` | 期貨三大法人未平倉餘額（TX/MTX/TE/TF/XIF） | date（唯一降冪） |
+| `taiex_exchange` | 台股加權指數與 USD/TWD 匯率 | date（唯一降冪） |
 
 ### daily_market_fetch 欄位
 
@@ -114,6 +117,7 @@ Backend/
 | margin_trading | bool/None | 融資融券是否已抓取 |
 | futures_oi | bool/None | 台指期未平倉是否已抓取 |
 | futures_institutional | bool/None | 期貨三大法人是否已抓取 |
+| taiex_exchange | bool/None | 台股指數與匯率是否已抓取 |
 | fetch_log | str | 抓取紀錄（每行 `[YYYY-MM-DD HH:MM:SS] 訊息`） |
 
 ## 排程任務
@@ -121,6 +125,7 @@ Backend/
 | job_id | task_type | Cron | 說明 |
 |--------|-----------|------|------|
 | twse_daily_open_check | twse_check_open | `0 7 * * *` | 每日 07:00 開盤狀態 |
+| taiex_exchange_daily | taiex_exchange_fetch | `0 15 * * *` | 每日 15:00 台股指數與匯率 |
 | futures_institutional_daily | futures_institutional_fetch | `50 15 * * *` | 每日 15:50 期貨三大法人 |
 | twse_institutional_daily | twse_institutional_fetch | `10 16 * * *` | 每日 16:10 上市三大法人 |
 | futures_oi_daily | futures_oi_fetch | `10 16 * * *` | 每日 16:10 台指期未平倉 |
@@ -137,6 +142,7 @@ Backend/
 | MARGIN_TRADING_BACKFILL_DAYS | 5 | 融資融券回溯天數 |
 | FUTURES_OI_BACKFILL_DAYS | 5 | 台指期未平倉回溯天數 |
 | FUTURES_INSTITUTIONAL_BACKFILL_DAYS | 5 | 期貨三大法人回溯天數 |
+| TAIEX_EXCHANGE_BACKFILL_DAYS | 5 | 台股指數與匯率回溯天數 |
 | CHART_DEFAULT_DAYS | 30 | 圖表預設顯示天數 |
 | FINMIND_API_TOKEN | — | FinMind API 金鑰（存於 .env） |
 
@@ -149,6 +155,7 @@ Backend/
 | GET | `/api/v1/market/margin?days=30` | 融資融券餘額歷史 |
 | GET | `/api/v1/market/futures-oi?days=30` | 台指期未平倉歷史 |
 | GET | `/api/v1/market/futures-institutional?days=30` | 期貨三大法人歷史 |
+| GET | `/api/v1/market/taiex-exchange?days=30` | 台股加權指數與匯率歷史 |
 
 ## 外部 API 資料來源
 
@@ -159,6 +166,9 @@ Backend/
 | 證交所 (TWSE) | `twse.com.tw/rwd/zh/marginTrading/MI_MARGN` | 融資融券餘額 |
 | 櫃買中心 (TPEx) | `tpex.org.tw/.../3itrdsum_result.php` | 上櫃三大法人買賣金額 |
 | FinMind | `api.finmindtrade.com/api/v4/data` (TaiwanFuturesDaily) | 台指期未平倉 |
-| FinMind | `api.finmindtrade.com/api/v4/data` (TaiwanFuturesInstitutionalInvestors) | 期貨三大法人 |
+| FinMind | `api.finmindtrade.com/api/v4/data` (TaiwanFuturesInstitutionalInvestors) | 期貨三大法人（TX/MTX/TE/TF/XIF） |
+| 證交所 (TWSE) | `twse.com.tw/rwd/zh/TAIEX/MI_5MINS_HIST` | 加權指數月收盤資料 |
+| fawazahmed0 | `cdn.jsdelivr.net/.../currency-api@{date}/.../usd.json` | USD/TWD 歷史匯率 |
+| 台銀 (BOT) | `rate.bot.com.tw/xrt/fltxt/0/day` | USD/TWD 當日即時匯率 |
 
 注意：櫃買中心 API 使用民國年日期格式（如 115/04/17）。FinMind 需要 API Token。

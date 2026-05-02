@@ -303,3 +303,52 @@ async def futures_institutional_fetch(params: dict) -> str:
     summary = "；".join(summary_parts) if summary_parts else "無需處理"
     logger.info(f"期貨三大法人抓取完成 — {summary}")
     return summary
+
+
+@register_task("taiex_exchange_fetch")
+async def taiex_exchange_fetch(params: dict) -> str:
+    """
+    抓取台股加權指數與匯率，並回溯補抓近 N 日缺漏。
+
+    加權指數來源：證交所（按月批量取）
+    匯率來源：台銀（僅當日）
+    """
+    from app.services.taiex_exchange import check_and_save_taiex_exchange
+
+    settings = get_settings()
+    db = get_database()
+    today = date.today()
+    backfill_days = settings.TAIEX_EXCHANGE_BACKFILL_DAYS
+
+    fetched_dates = []
+    skipped_count = 0
+    closed_count = 0
+    error_dates = []
+
+    for i in range(backfill_days - 1, -1, -1):
+        target = today - timedelta(days=i)
+        try:
+            result = await check_and_save_taiex_exchange(db, target)
+            if result["status"] == "fetched":
+                fetched_dates.append(result["date"])
+            elif result["status"] == "closed":
+                closed_count += 1
+            else:
+                skipped_count += 1
+        except Exception as e:
+            error_dates.append(target.strftime("%Y-%m-%d"))
+            logger.error(f"{target} 台股指數匯率抓取失敗: {e}")
+
+    summary_parts = []
+    if fetched_dates:
+        summary_parts.append(f"新抓取 {len(fetched_dates)} 筆: {', '.join(fetched_dates)}")
+    if skipped_count:
+        summary_parts.append(f"跳過 {skipped_count} 筆")
+    if closed_count:
+        summary_parts.append(f"休市 {closed_count} 日")
+    if error_dates:
+        summary_parts.append(f"失敗 {len(error_dates)} 筆")
+
+    summary = "；".join(summary_parts) if summary_parts else "無需處理"
+    logger.info(f"台股指數匯率抓取完成 — {summary}")
+    return summary

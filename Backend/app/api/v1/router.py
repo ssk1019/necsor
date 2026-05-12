@@ -4,7 +4,7 @@ API v1 router — aggregates all endpoint routers.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import health, scheduler, market_data
+from app.api.v1.endpoints import health, scheduler, market_data, wespa
 
 api_router = APIRouter()
 
@@ -16,3 +16,6 @@ api_router.include_router(scheduler.router, prefix="/scheduler", tags=["Schedule
 
 # 市場資料
 api_router.include_router(market_data.router, prefix="/market", tags=["Market Data"])
+
+# Wespa 股票資料
+api_router.include_router(wespa.router, prefix="/wespa", tags=["Wespa"])

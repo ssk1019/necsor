@@ -25,14 +25,15 @@ Frontend/
 │       └── TaiexExchangeChart.client.vue      # 台股加權指數 vs 匯率曲線圖
 ├── composables/
 │   ├── useApi.ts             # 通用 API 封裝
-│   ├── useMarketApi.ts       # 市場資料 API（三大法人、融資融券、台指期）
+│   ├── useMarketApi.ts       # 市場資料 API（三大法人、融資融券、台指期、匯率）
 │   └── useChartTheme.ts      # 圖表深色模式配色
 ├── layouts/
 │   └── default.vue           # 預設版面（導覽列 + 深色模式切換按鈕）
 ├── middleware/                # 路由中間件
 ├── pages/
 │   ├── index.vue             # 首頁
-│   └── market.vue            # 市場總覽（6 個圖表）
+│   ├── market.vue            # 市場總覽（6 個圖表）
+│   └── wespa.vue             # Wespa 股票篩選表格
 ├── plugins/                  # Nuxt 插件
 ├── public/                   # 靜態資源
 ├── server/                   # Nitro 伺服器路由
@@ -55,6 +56,13 @@ Frontend/
 - **頁面：** 檔案路由，`pages/about.vue` → `/about`
 - **深色模式：** 用 CSS 變數（`var(--bg-card)` 等），定義在 `main.scss` 的 `:root` 和 `.dark`
 - **API 呼叫：** 市場資料用 `useMarketApi()`，通用用 `useApi()`
+
+## 頁面導覽
+
+| 路徑 | 頁簽名稱 | 說明 |
+|------|---------|------|
+| `/market` | 市場總覽 | 6 個圖表（加權指數、三大法人、融資融券、台指期、期貨三大法人） |
+| `/wespa` | Wespa | 股票篩選表格（爬取 + 篩選 + 進階條件 + 預設儲存） |
 
 ## 深色模式
 

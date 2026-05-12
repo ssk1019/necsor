@@ -18,7 +18,8 @@ Backend/
 │   │       └── endpoints/
 │   │           ├── health.py       # 健康檢查
 │   │           ├── scheduler.py    # 排程管理 CRUD
-│   │           └── market_data.py  # 市場資料查詢（供前端圖表）
+│   │           ├── market_data.py  # 市場資料查詢（供前端圖表）
+│   │           └── wespa.py        # Wespa 股票資料 API
 │   ├── core/                 # 跨模組基礎設施
 │   │   ├── config.py         # 集中設定（pydantic-settings，含業務設定）
 │   │   ├── database.py       # MongoDB + Redis 連線管理
@@ -54,7 +55,8 @@ Backend/
 │   │   ├── margin_trading.py         # 融資融券餘額抓取
 │   │   ├── futures_oi.py             # 台指期未平倉抓取
 │   │   ├── futures_institutional.py  # 期貨三大法人未平倉抓取
-│   │   └── taiex_exchange.py         # 台股加權指數與匯率抓取
+│   │   ├── taiex_exchange.py         # 台股加權指數與匯率抓取
+│   │   └── wespa.py                  # Wespa 股票資料爬取與儲存
 │   ├── utils/
 │   │   ├── cache.py          # Redis 快取工具
 │   │   └── time.py           # 時間工具（now_taipei, now_log_prefix）
@@ -105,6 +107,7 @@ Backend/
 | `futures_open_interest` | 台指期各合約未平倉口數 | date（唯一降冪） |
 | `futures_institutional` | 期貨三大法人未平倉餘額（TX/MTX/TE/TF/XIF） | date（唯一降冪） |
 | `taiex_exchange` | 台股加權指數與 USD/TWD 匯率 | date（唯一降冪） |
+| `wespa_stock_data` | Wespa 股票篩選資料（手動觸發抓取） | — |
 
 ### daily_market_fetch 欄位
 
@@ -156,6 +159,13 @@ Backend/
 | GET | `/api/v1/market/futures-oi?days=30` | 台指期未平倉歷史 |
 | GET | `/api/v1/market/futures-institutional?days=30` | 期貨三大法人歷史 |
 | GET | `/api/v1/market/taiex-exchange?days=30` | 台股加權指數與匯率歷史 |
+
+## Wespa API
+
+| 方法 | 路徑 | 說明 |
+|------|------|------|
+| GET | `/api/v1/wespa` | 取得已儲存的 Wespa 股票資料 |
+| POST | `/api/v1/wespa/refresh` | 重新從 Wespa 網站爬取並儲存 |
 
 ## 外部 API 資料來源
 

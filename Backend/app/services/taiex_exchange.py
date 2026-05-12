@@ -95,6 +95,26 @@ async def fetch_usd_twd_rate() -> dict | None:
     return None
 
 
+# 歷史匯率 API（免費，每日更新）
+HISTORICAL_RATE_API = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{date}/v1/currencies/usd.json"
+
+
+async def _fetch_historical_rate(date_str: str) -> dict | None:
+    """從 fawazahmed0 取得指定日期的 USD/TWD 歷史匯率。"""
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            resp = await client.get(HISTORICAL_RATE_API.format(date=date_str))
+            if resp.status_code == 200:
+                data = resp.json()
+                twd = data.get("usd", {}).get("twd")
+                if twd:
+                    rate = round(twd, 4)
+                    return {"usd_twd_buy": round(rate - 0.075, 4), "usd_twd_sell": rate}
+    except Exception:
+        pass
+    return None
+
+
 async def _append_fetch_log(db: AsyncIOMotorDatabase, date_str: str, log_line: str) -> None:
     collection = db[DAILY_MARKET_COLLECTION]
     doc = await collection.find_one({"date": date_str})
@@ -148,24 +168,27 @@ async def check_and_save_taiex_exchange(
             item_date = item["date"]
             item_existing = await data_collection.find_one({"date": item_date})
             if not item_existing:
+                # 嘗試取得該日匯率
+                rate_data = await _fetch_historical_rate(item_date)
                 await data_collection.insert_one({
                     **item,
-                    "usd_twd_buy": None,
-                    "usd_twd_sell": None,
+                    **(rate_data or {"usd_twd_buy": None, "usd_twd_sell": None}),
                     "created_at": now,
                     "updated_at": now,
                 })
 
-        # 如果是今天，嘗試取匯率
-        today = date.today()
-        if target_date == today:
-            rate = await fetch_usd_twd_rate()
+        # 如果目標日期沒有匯率，嘗試補上
+        doc_check = await data_collection.find_one({"date": date_str})
+        if doc_check and doc_check.get("usd_twd_sell") is None:
+            rate = await _fetch_historical_rate(date_str)
+            if not rate:
+                rate = await fetch_usd_twd_rate()  # fallback 用台銀當日
             if rate:
                 await data_collection.update_one(
                     {"date": date_str},
                     {"$set": {**rate, "updated_at": now}},
                 )
-                logger.info(f"{date_str} 匯率已更新: USD/TWD 買={rate['usd_twd_buy']} 賣={rate['usd_twd_sell']}")
+                logger.info(f"{date_str} 匯率已更新: USD/TWD={rate['usd_twd_sell']}")
 
         # 更新旗標
         await fetch_collection.update_one(

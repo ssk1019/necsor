@@ -5,6 +5,7 @@
         <NuxtLink to="/" class="logo">Necsor</NuxtLink>
         <nav class="nav-links">
           <NuxtLink to="/market" class="nav-link">市場總覽</NuxtLink>
+          <NuxtLink to="/wespa" class="nav-link">Wespa</NuxtLink>
         </nav>
         <div class="header-actions">
           <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切換淺色模式' : '切換深色模式'">

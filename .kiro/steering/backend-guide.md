@@ -108,6 +108,7 @@ Backend/
 | `futures_institutional` | 期貨三大法人未平倉餘額（TX/MTX/TE/TF/XIF） | date（唯一降冪） |
 | `taiex_exchange` | 台股加權指數與 USD/TWD 匯率 | date（唯一降冪） |
 | `wespa_stock_data` | Wespa 股票篩選資料（手動觸發抓取） | — |
+| `wespa_filter_presets` | Wespa 篩選預設（name 為 key） | name |
 
 ### daily_market_fetch 欄位
 
@@ -166,6 +167,9 @@ Backend/
 |------|------|------|
 | GET | `/api/v1/wespa` | 取得已儲存的 Wespa 股票資料 |
 | POST | `/api/v1/wespa/refresh` | 重新從 Wespa 網站爬取並儲存 |
+| GET | `/api/v1/wespa/presets` | 取得所有篩選預設 |
+| POST | `/api/v1/wespa/presets` | 儲存篩選預設（同名覆蓋） |
+| DELETE | `/api/v1/wespa/presets/{name}` | 刪除指定篩選預設 |
 
 ## 外部 API 資料來源
 

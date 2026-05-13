@@ -25,6 +25,11 @@
     <div v-if="records.length" class="toolbar">
       <input class="global-search" v-model="globalSearch" placeholder="🔍 全域搜尋（股票代號、公司名稱...）" />
 
+      <!-- 欄位顯示 -->
+      <button class="col-toggle-btn" @click="showColPanel = !showColPanel">
+        📊 欄位 ({{ visibleColumns.length }}/{{ columns.length }})
+      </button>
+
       <!-- 篩選預設 -->
       <div class="preset-group">
         <select class="preset-select" v-model="selectedPreset" @change="applyPreset">
@@ -82,7 +87,9 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th v-for="col in columns" :key="col" class="table-th" @click="toggleSort(col)">
+              <th v-for="(col, colIdx) in visibleColumns" :key="col"
+                class="table-th" :class="{ 'frozen-col': isFrozenCol(col), ['frozen-' + frozenIndex(col)]: isFrozenCol(col) }"
+                @click="toggleSort(col)">
                 <div class="th-inner">
                   <span class="th-label">{{ col }}</span>
                   <span v-if="sortCol === col" class="sort-icon">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
@@ -98,7 +105,8 @@
           </thead>
           <tbody>
             <tr v-for="(row, idx) in paginatedRecords" :key="idx" class="table-row">
-              <td v-for="col in columns" :key="col" class="table-td">
+              <td v-for="(col, colIdx) in visibleColumns" :key="col"
+                class="table-td" :class="{ 'frozen-col': isFrozenCol(col), ['frozen-' + frozenIndex(col)]: isFrozenCol(col) }">
                 <template v-if="col === '股票代號'">
                   <a :href="`https://www.wantgoo.com/stock/${row[col]}/technical-chart`"
                      target="_blank" class="stock-link">{{ row[col] }}</a>
@@ -126,6 +134,27 @@
     <div v-else-if="!loading" class="empty-state">
       <p>目前沒有資料，請點擊「重新刷新資料」按鈕開始抓取。</p>
     </div>
+
+    <!-- 欄位選擇面板 -->
+    <Teleport to="body">
+      <div v-if="showColPanel" class="filter-overlay" @click="showColPanel = false"></div>
+      <div v-if="showColPanel" class="filter-panel">
+        <div class="fp-header">
+          <strong>選擇顯示欄位</strong>
+          <button @click="showColPanel = false">✕</button>
+        </div>
+        <input class="fp-search" v-model="colSearch" placeholder="搜尋欄位..." />
+        <div class="fp-select-all">
+          <label><input type="checkbox" :checked="hiddenColumns.length === 0" @change="toggleAllColumns" /> 全選</label>
+        </div>
+        <div class="fp-list">
+          <label v-for="col in filteredColumns" :key="col" class="fp-item">
+            <input type="checkbox" :checked="!hiddenColumns.includes(col)" @change="toggleColumn(col)" />
+            <span :class="{ 'col-has-filter': !!filters[col] }">{{ col }}</span>
+          </label>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- 篩選面板 -->
     <Teleport to="body">
@@ -192,6 +221,37 @@ const pageSize = ref(100);
 const showAdvanced = ref(false);
 const crossFilters = ref<{ colA: string; op: string; colB: string }[]>([]);
 const numericColumns = computed(() => columns.value.filter((col) => isNumericCol(col)));
+
+// 欄位顯示控制
+const showColPanel = ref(false);
+const hiddenColumns = ref<string[]>([]);
+const colSearch = ref("");
+const visibleColumns = computed(() => columns.value.filter((col) => !hiddenColumns.value.includes(col)));
+const filteredColumns = computed(() => {
+  if (!colSearch.value.trim()) return columns.value;
+  const s = colSearch.value.toLowerCase();
+  return columns.value.filter((col) => col.toLowerCase().includes(s));
+});
+
+// 凍結欄位
+const FROZEN_COLS = ["股票代號", "公司"];
+const isFrozenCol = (col: string) => FROZEN_COLS.includes(col);
+const frozenIndex = (col: string) => FROZEN_COLS.indexOf(col);
+
+const toggleColumn = (col: string) => {
+  const idx = hiddenColumns.value.indexOf(col);
+  if (idx >= 0) hiddenColumns.value.splice(idx, 1);
+  else hiddenColumns.value.push(col);
+};
+
+const toggleAllColumns = () => {
+  if (hiddenColumns.value.length === 0) {
+    // 全隱藏（保留股票代號）
+    hiddenColumns.value = columns.value.filter((c) => c !== "股票代號");
+  } else {
+    hiddenColumns.value = [];
+  }
+};
 
 // 篩選預設（localStorage）
 interface FilterPreset {
@@ -501,6 +561,27 @@ onMounted(() => { loadPresets(); loadData(); });
 .global-search { flex: 1; min-width: 200px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: $radius-md; background: var(--bg-card); color: var(--text-primary); font-size: 0.85rem; outline: none; &:focus { border-color: $color-primary; } &::placeholder { color: var(--text-muted); } }
 .filter-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
+.col-toggle-btn {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-sm;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.col-has-filter {
+  color: $color-primary;
+  font-weight: 600;
+}
+
 // 篩選預設
 .preset-group {
   display: flex;
@@ -551,6 +632,29 @@ onMounted(() => { loadPresets(); loadData(); });
 .data-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
 
 .table-th { position: sticky; top: 0; background: var(--bg-secondary); z-index: 2; padding: 0.5rem; border-bottom: 2px solid var(--border-color); white-space: nowrap; cursor: pointer; user-select: none; &:hover { background: var(--bg-card); } }
+
+// 凍結欄位
+.frozen-col {
+  position: sticky;
+  z-index: 3;
+  background: var(--bg-secondary);
+  border-right: 2px solid var(--border-color);
+}
+
+th.frozen-col {
+  z-index: 4;
+}
+
+.frozen-0 { left: 0; }
+.frozen-1 { left: 80px; }
+
+tr .frozen-col {
+  background: var(--bg-card);
+}
+
+tr:hover .frozen-col {
+  background: rgba($color-primary, 0.03);
+}
 .th-inner { display: flex; align-items: center; gap: 0.3rem; }
 .th-label { font-weight: 600; color: var(--text-primary); font-size: 0.75rem; }
 .sort-icon { font-size: 0.6rem; color: $color-primary; }

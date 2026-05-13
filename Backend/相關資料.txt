@@ -1,2 +1,6 @@
+＊ 三大法人買賣金額統計表
+   上市 https://www.twse.com.tw/zh/trading/foreign/bfi82u.html
+   上櫃 https://www.tpex.org.tw/zh-tw/mainboard/trading/major-institutional/summary/day.html
+    
 ＊ 三大法人期貨多空淨額
    https://www.taifex.com.tw/cht/3/futContractsDate

@@ -29,6 +29,7 @@ from app.models.margin_trading import ensure_margin_trading_indexes
 from app.models.futures_oi import ensure_futures_oi_indexes
 from app.models.futures_institutional import ensure_futures_institutional_indexes
 from app.models.taiex_exchange import ensure_taiex_exchange_indexes
+from app.models.sector_flow import ensure_sector_flow_indexes
 
 
 async def main(override_days: int | None = None):
@@ -58,6 +59,7 @@ async def main(override_days: int | None = None):
     await ensure_futures_oi_indexes(db)
     await ensure_futures_institutional_indexes(db)
     await ensure_taiex_exchange_indexes(db)
+    await ensure_sector_flow_indexes(db)
 
     # 載入任務模組
     import app.scheduler.tasks  # noqa: F401
@@ -69,6 +71,7 @@ async def main(override_days: int | None = None):
         futures_oi_fetch,
         tpex_institutional_fetch,
         margin_trading_fetch,
+        sector_flow_fetch,
     )
 
     # 依序執行（開盤狀態必須先跑，其他任務依賴它）
@@ -80,6 +83,7 @@ async def main(override_days: int | None = None):
         ("台指期未平倉", futures_oi_fetch),
         ("上櫃三大法人", tpex_institutional_fetch),
         ("融資融券餘額", margin_trading_fetch),
+        ("類股資金流向", sector_flow_fetch),
     ]
 
     logger.info("=" * 50)

@@ -34,6 +34,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import { CHART_COLORS } from "~/constants/colors";
 import type { MarginRecord } from "~/composables/useMarketApi";
 
 ChartJS.register(
@@ -75,8 +76,8 @@ const chartData = computed(() => {
         data: props.records.map((r) =>
           r.margin_buy ? +(r.margin_buy.today_balance / 1e4).toFixed(1) : 0
         ),
-        borderColor: "#ef4444",
-        backgroundColor: "rgba(239, 68, 68, 0.08)",
+        borderColor: CHART_COLORS.margin,
+        backgroundColor: CHART_COLORS.margin + "14",
         borderWidth: 2,
         pointRadius: props.records.length > 30 ? 0 : 3,
         pointHoverRadius: 5,
@@ -89,8 +90,8 @@ const chartData = computed(() => {
         data: props.records.map((r) =>
           r.short_sell ? +(r.short_sell.today_balance / 1e4).toFixed(1) : 0
         ),
-        borderColor: "#3b82f6",
-        backgroundColor: "rgba(59, 130, 246, 0.08)",
+        borderColor: CHART_COLORS.short,
+        backgroundColor: CHART_COLORS.short + "14",
         borderWidth: 2,
         pointRadius: props.records.length > 30 ? 0 : 3,
         pointHoverRadius: 5,
@@ -105,7 +106,7 @@ const chartData = computed(() => {
             ? +(r.margin_buy_amount.today_balance / 1e5).toFixed(1)
             : 0
         ),
-        borderColor: "#f59e0b",
+        borderColor: CHART_COLORS.marginAmount,
         backgroundColor: "transparent",
         borderWidth: 2,
         borderDash: [6, 3],

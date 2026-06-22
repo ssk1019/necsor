@@ -1,7 +1,15 @@
 /**
- * 圖表深色模式配色 composable。
- * 提供根據目前主題動態調整的圖表通用設定。
+ * 圖表主題配色 composable。
+ * 提供深色模式配色。顏色定義在 constants/colors.ts。
  */
+
+export { CHART_COLORS } from "~/constants/colors";
+
+/**
+ * 全站統一的籌碼/維度顏色定義（auto-import friendly）。
+ */
+export const useChartColors = () => CHART_COLORS;
+
 export function useChartTheme() {
   const colorMode = useColorMode();
   const isDark = computed(() => colorMode.value === "dark");

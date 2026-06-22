@@ -44,6 +44,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { CHART_COLORS } from "~/constants/colors";
 import type { FuturesInstitutionalRecord, FuturesProductData, FuturesInstitutionalItem } from "~/composables/useMarketApi";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -106,8 +107,8 @@ const chartData = computed(() => {
           const pd = getProductData(r, product);
           return pd?.foreign_investor?.net_oi_volume ?? 0;
         }),
-        backgroundColor: "rgba(34, 197, 94, 0.7)",
-        borderColor: "#22c55e",
+        backgroundColor: CHART_COLORS.foreign + "b3",
+        borderColor: CHART_COLORS.foreign,
         borderWidth: 1,
         borderRadius: 3,
       },
@@ -117,8 +118,8 @@ const chartData = computed(() => {
           const pd = getProductData(r, product);
           return pd?.investment_trust?.net_oi_volume ?? 0;
         }),
-        backgroundColor: "rgba(59, 130, 246, 0.7)",
-        borderColor: "#3b82f6",
+        backgroundColor: CHART_COLORS.trust + "b3",
+        borderColor: CHART_COLORS.trust,
         borderWidth: 1,
         borderRadius: 3,
       },
@@ -128,8 +129,8 @@ const chartData = computed(() => {
           const pd = getProductData(r, product);
           return pd?.dealer?.net_oi_volume ?? 0;
         }),
-        backgroundColor: "rgba(245, 158, 11, 0.7)",
-        borderColor: "#f59e0b",
+        backgroundColor: CHART_COLORS.dealer + "b3",
+        borderColor: CHART_COLORS.dealer,
         borderWidth: 1,
         borderRadius: 3,
       },

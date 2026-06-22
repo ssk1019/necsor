@@ -32,6 +32,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { CHART_COLORS } from "~/constants/colors";
 import type { InstitutionalRecord } from "~/composables/useMarketApi";
 
 ChartJS.register(
@@ -55,14 +56,14 @@ defineEmits<{
 
 const dayOptions = [7, 14, 30, 60, 90];
 
-// 系列定義：名稱、取值 key、顏色
+// 系列定義：名稱、取值 key、顏色（使用全站統一色彩）
 const seriesDef = [
-  { label: "外資及陸資", key: "foreign_investor", color: "#ef4444" },
-  { label: "投信", key: "investment_trust", color: "#3b82f6" },
-  { label: "自營商(自行買賣)", key: "dealer_self", color: "#f59e0b" },
-  { label: "自營商(避險)", key: "dealer_hedge", color: "#8b5cf6" },
-  { label: "外資自營商", key: "foreign_dealer", color: "#6b7280" },
-  { label: "合計", key: "total", color: "#10b981" },
+  { label: "外資及陸資", key: "foreign_investor", color: CHART_COLORS.foreign },
+  { label: "投信", key: "investment_trust", color: CHART_COLORS.trust },
+  { label: "自營商(自行買賣)", key: "dealer_self", color: CHART_COLORS.dealerSelf },
+  { label: "自營商(避險)", key: "dealer_hedge", color: CHART_COLORS.dealerHedge },
+  { label: "外資自營商", key: "foreign_dealer", color: CHART_COLORS.foreignDealer },
+  { label: "合計", key: "total", color: CHART_COLORS.total },
 ];
 
 const chartData = computed(() => {

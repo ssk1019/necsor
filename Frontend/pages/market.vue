@@ -65,11 +65,16 @@
       />
     </section>
 
+    <!-- 類股資金流向 -->
+    <section class="chart-section">
+      <ChartSectorFlowChart />
+    </section>
+
     <!-- 未來擴充區塊預留 -->
     <section class="coming-soon">
       <div class="coming-soon-card">
         <span class="coming-soon-icon">🔜</span>
-        <p>各類股資訊...即將推出</p>
+        <p>更多分析功能...即將推出</p>
       </div>
     </section>
   </div>

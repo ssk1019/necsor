@@ -35,7 +35,8 @@ Backend/
 │   │   ├── margin_trading.py        # 融資融券餘額
 │   │   ├── futures_oi.py            # 台指期未平倉
 │   │   ├── futures_institutional.py # 期貨三大法人未平倉（TX/MTX/TE/TF/XIF）
-│   │   └── taiex_exchange.py        # 台股加權指數與匯率
+│   │   ├── taiex_exchange.py        # 台股加權指數與匯率
+│   │   └── sector_flow.py           # 類股資金流向
 │   ├── schemas/              # Pydantic 請求/回應 Schema
 │   │   ├── common.py         # ResponseBase[T], PaginatedResponse[T]
 │   │   └── scheduler.py      # 排程 CRUD Schema
@@ -56,6 +57,7 @@ Backend/
 │   │   ├── futures_oi.py             # 台指期未平倉抓取
 │   │   ├── futures_institutional.py  # 期貨三大法人未平倉抓取
 │   │   ├── taiex_exchange.py         # 台股加權指數與匯率抓取
+│   │   ├── sector_flow.py            # 類股資金流向抓取（含個股明細）
 │   │   └── wespa.py                  # Wespa 股票資料爬取與儲存
 │   ├── utils/
 │   │   ├── cache.py          # Redis 快取工具
@@ -107,6 +109,7 @@ Backend/
 | `futures_open_interest` | 台指期各合約未平倉口數 | date（唯一降冪） |
 | `futures_institutional` | 期貨三大法人未平倉餘額（TX/MTX/TE/TF/XIF） | date（唯一降冪） |
 | `taiex_exchange` | 台股加權指數與 USD/TWD 匯率 | date（唯一降冪） |
+| `sector_flow` | 類股資金流向（含個股明細） | date（唯一降冪） |
 | `wespa_stock_data` | Wespa 股票篩選資料（手動觸發抓取） | — |
 | `wespa_filter_presets` | Wespa 篩選預設（name 為 key） | name |
 
@@ -122,6 +125,7 @@ Backend/
 | futures_oi | bool/None | 台指期未平倉是否已抓取 |
 | futures_institutional | bool/None | 期貨三大法人是否已抓取 |
 | taiex_exchange | bool/None | 台股指數與匯率是否已抓取 |
+| sector_flow | bool/None | 類股資金流向是否已抓取 |
 | fetch_log | str | 抓取紀錄（每行 `[YYYY-MM-DD HH:MM:SS] 訊息`） |
 
 ## 排程任務
@@ -135,6 +139,7 @@ Backend/
 | futures_oi_daily | futures_oi_fetch | `10 16 * * *` | 每日 16:10 台指期未平倉 |
 | tpex_institutional_daily | tpex_institutional_fetch | `20 16 * * *` | 每日 16:20 上櫃三大法人 |
 | margin_trading_daily | margin_trading_fetch | `10 21 * * *` | 每日 21:10 融資融券餘額 |
+| sector_flow_daily | sector_flow_fetch | `30 16 * * *` | 每日 16:30 類股資金流向 |
 
 ## 業務設定（config.py）
 
@@ -147,6 +152,7 @@ Backend/
 | FUTURES_OI_BACKFILL_DAYS | 5 | 台指期未平倉回溯天數 |
 | FUTURES_INSTITUTIONAL_BACKFILL_DAYS | 5 | 期貨三大法人回溯天數 |
 | TAIEX_EXCHANGE_BACKFILL_DAYS | 5 | 台股指數與匯率回溯天數 |
+| SECTOR_FLOW_BACKFILL_DAYS | 5 | 類股資金流向回溯天數 |
 | CHART_DEFAULT_DAYS | 30 | 圖表預設顯示天數 |
 | FINMIND_API_TOKEN | — | FinMind API 金鑰（存於 .env） |
 
@@ -160,6 +166,7 @@ Backend/
 | GET | `/api/v1/market/futures-oi?days=30` | 台指期未平倉歷史 |
 | GET | `/api/v1/market/futures-institutional?days=30` | 期貨三大法人歷史 |
 | GET | `/api/v1/market/taiex-exchange?days=30` | 台股加權指數與匯率歷史 |
+| GET | `/api/v1/market/sector-flow` | 類股資金流向（含個股明細） |
 
 ## Wespa API
 
@@ -184,5 +191,6 @@ Backend/
 | 證交所 (TWSE) | `twse.com.tw/rwd/zh/TAIEX/MI_5MINS_HIST` | 加權指數月收盤資料 |
 | fawazahmed0 | `cdn.jsdelivr.net/.../currency-api@{date}/.../usd.json` | USD/TWD 歷史匯率 |
 | 台銀 (BOT) | `rate.bot.com.tw/xrt/fltxt/0/day` | USD/TWD 當日即時匯率 |
+| 證交所 (TWSE) | `twse.com.tw/rwd/zh/fund/T86` | 類股資金流向（T86 三大法人買賣超） |
 
-注意：櫃買中心 API 使用民國年日期格式（如 115/04/17）。FinMind 需要 API Token。
+注意：櫃買中心 API 使用民國年日期格式（如 115/04/17）。FinMind 需要 API Token。T86 API 需設 `follow_redirects=True`。

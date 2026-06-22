@@ -21,6 +21,7 @@ from app.models.margin_trading import ensure_margin_trading_indexes
 from app.models.futures_oi import ensure_futures_oi_indexes
 from app.models.futures_institutional import ensure_futures_institutional_indexes
 from app.models.taiex_exchange import ensure_taiex_exchange_indexes
+from app.models.sector_flow import ensure_sector_flow_indexes
 from app.scheduler.engine import SchedulerEngine
 
 settings = get_settings()
@@ -48,6 +49,7 @@ async def lifespan(app: FastAPI):
     await ensure_futures_oi_indexes(get_database())
     await ensure_futures_institutional_indexes(get_database())
     await ensure_taiex_exchange_indexes(get_database())
+    await ensure_sector_flow_indexes(get_database())
 
     # 載入任務模組（觸發 @register_task 裝飾器）
     import app.scheduler.tasks  # noqa: F401

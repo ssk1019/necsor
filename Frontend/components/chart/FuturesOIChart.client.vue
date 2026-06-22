@@ -36,6 +36,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { CHART_COLORS } from "~/constants/colors";
 import type { FuturesOIRecord } from "~/composables/useMarketApi";
 
 ChartJS.register(
@@ -78,8 +79,8 @@ const chartData = computed(() => {
         type: "bar" as const,
         label: "成交量（口）",
         data: props.records.map((r) => r.total_volume),
-        backgroundColor: "rgba(148, 163, 184, 0.35)",
-        borderColor: "rgba(148, 163, 184, 0.6)",
+        backgroundColor: CHART_COLORS.volume + "59",
+        borderColor: CHART_COLORS.volume + "99",
         borderWidth: 1,
         borderRadius: 2,
         yAxisID: "yVolume",
@@ -89,8 +90,8 @@ const chartData = computed(() => {
         type: "line" as const,
         label: "未平倉口數",
         data: props.records.map((r) => r.total_oi),
-        borderColor: "#ef4444",
-        backgroundColor: "rgba(239, 68, 68, 0.06)",
+        borderColor: CHART_COLORS.oi,
+        backgroundColor: CHART_COLORS.oi + "10",
         borderWidth: 2.5,
         pointRadius: props.records.length > 30 ? 0 : 3,
         pointHoverRadius: 5,
@@ -103,7 +104,7 @@ const chartData = computed(() => {
         type: "line" as const,
         label: "近月收盤價",
         data: props.records.map((r) => r.front_month_close),
-        borderColor: "#3b82f6",
+        borderColor: CHART_COLORS.price,
         backgroundColor: "transparent",
         borderWidth: 2,
         borderDash: [5, 3],

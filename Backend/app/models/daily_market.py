@@ -71,6 +71,12 @@ class DailyMarketFetch(BaseModel):
         description="期貨三大法人未平倉是否已抓取（None=未抓, True=已抓, False=抓取失敗）",
     )
 
+    # === 類股資金流向 ===
+    sector_flow: Optional[bool] = Field(
+        default=None,
+        description="類股資金流向是否已抓取（None=未抓, True=已抓, False=抓取失敗）",
+    )
+
     # === 未來擴充欄位（範例） ===
     # tpex_is_open: Optional[bool] = None
     # exchange_rate_usd_twd: Optional[float] = None

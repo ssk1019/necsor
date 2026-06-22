@@ -34,6 +34,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import { CHART_COLORS } from "~/constants/colors";
 import type { TaiexExchangeRecord } from "~/composables/useMarketApi";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
@@ -61,8 +62,8 @@ const chartData = computed(() => {
     {
       label: "加權指數收盤",
       data: props.records.map((r) => r.taiex_close ?? null),
-      borderColor: "#ef4444",
-      backgroundColor: "rgba(239, 68, 68, 0.06)",
+      borderColor: CHART_COLORS.taiex,
+      backgroundColor: CHART_COLORS.taiex + "10",
       borderWidth: 2.5,
       pointRadius: props.records.length > 30 ? 0 : 3,
       pointHoverRadius: 5,
@@ -78,7 +79,7 @@ const chartData = computed(() => {
     datasets.push({
       label: "USD/TWD 即期賣出",
       data: props.records.map((r) => r.usd_twd_sell ?? null),
-      borderColor: "#3b82f6",
+      borderColor: CHART_COLORS.usdTwd,
       backgroundColor: "transparent",
       borderWidth: 2,
       borderDash: [5, 3],

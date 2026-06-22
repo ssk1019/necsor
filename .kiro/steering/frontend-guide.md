@@ -22,11 +22,14 @@ Frontend/
 │       ├── MarginChart.client.vue             # 融資融券曲線圖
 │       ├── FuturesOIChart.client.vue          # 台指期混合圖
 │       ├── FuturesInstitutionalChart.client.vue # 期貨三大法人長條圖（含 5 種商品 Tab）
-│       └── TaiexExchangeChart.client.vue      # 台股加權指數 vs 匯率曲線圖
+│       ├── TaiexExchangeChart.client.vue      # 台股加權指數 vs 匯率曲線圖
+│       └── SectorFlowChart.client.vue         # 類股資金流向水平長條圖（含個股展開）
 ├── composables/
 │   ├── useApi.ts             # 通用 API 封裝
 │   ├── useMarketApi.ts       # 市場資料 API（三大法人、融資融券、台指期、匯率）
-│   └── useChartTheme.ts      # 圖表深色模式配色
+│   └── useChartTheme.ts      # 圖表深色模式配色（re-export CHART_COLORS）
+├── constants/
+│   └── colors.ts             # 全站統一圖表顏色定義（CHART_COLORS）
 ├── layouts/
 │   └── default.vue           # 預設版面（導覽列 + 深色模式切換按鈕）
 ├── middleware/                # 路由中間件
@@ -52,7 +55,8 @@ Frontend/
 - **元件：** 通用 UI 放 `components/ui/`，功能元件放 `components/<feature>/`
 - **圖表元件：** 使用 `.client.vue` 後綴（Chart.js 依賴 Canvas，無法 SSR）
 - **圖表樣式：** 卡片樣式統一用 `@use "~/assets/scss/chart-card"`，配色用 `useChartTheme()` composable
-- **Composables：** 放 `composables/`，Nuxt 自動匯入
+- **圖表顏色：** 統一從 `~/constants/colors.ts` 匯入 `CHART_COLORS`（需顯式 import，非 auto-import）
+- **Composables：** 放 `composables/`，Nuxt 自動匯入（注意：僅 `use*` 開頭的函式/composable 會自動匯入，一般常數需顯式 import）
 - **頁面：** 檔案路由，`pages/about.vue` → `/about`
 - **深色模式：** 用 CSS 變數（`var(--bg-card)` 等），定義在 `main.scss` 的 `:root` 和 `.dark`
 - **API 呼叫：** 市場資料用 `useMarketApi()`，通用用 `useApi()`
@@ -61,7 +65,7 @@ Frontend/
 
 | 路徑 | 頁簽名稱 | 說明 |
 |------|---------|------|
-| `/market` | 市場總覽 | 6 個圖表（加權指數、三大法人、融資融券、台指期、期貨三大法人） |
+| `/market` | 市場總覽 | 7 個圖表（加權指數、三大法人、融資融券、台指期、期貨三大法人、類股資金流向） |
 | `/wespa` | Wespa | 股票篩選表格（爬取 + 篩選 + 進階條件 + 預設儲存） |
 
 ## 深色模式
@@ -105,3 +109,23 @@ npm run preview      # 預覽正式建置
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
 | NUXT_PUBLIC_API_BASE | http://localhost:8000/api/v1 | 後端 API 基礎 URL |
+
+## 圖表統一色彩
+
+所有圖表的顏色定義集中在 `constants/colors.ts`（`CHART_COLORS`），確保相同維度跨圖表顏色一致。
+
+| Key | 色碼 | 用途 |
+|-----|------|------|
+| foreign | #22c55e（綠） | 外資 |
+| trust | #3b82f6（藍） | 投信 |
+| dealer | #f59e0b（橙） | 自營商 |
+| total | #ef4444（紅） | 合計 |
+| dealerSelf | #f59e0b（橙） | 自營商(自行買賣) |
+| dealerHedge | #8b5cf6（紫） | 自營商(避險) |
+| foreignDealer | #6b7280（灰） | 外資自營商 |
+| margin | #ef4444（紅） | 融資 |
+| short | #3b82f6（藍） | 融券 |
+| taiex | #ef4444（紅） | 加權指數 |
+| usdTwd | #3b82f6（藍） | USD/TWD 匯率 |
+
+**注意：** `CHART_COLORS` 不是 composable（非 `use*` 開頭），Nuxt 不會自動匯入，圖表元件需顯式 `import { CHART_COLORS } from "~/constants/colors"`。

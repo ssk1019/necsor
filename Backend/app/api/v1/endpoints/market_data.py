@@ -127,3 +127,42 @@ async def get_taiex_exchange(
     data.reverse()
 
     return {"success": True, "data": data, "total": len(data)}
+
+
+@router.get("/sector-flow", summary="類股資金流向（三大法人買賣超）")
+async def get_sector_flow(
+    date: str = Query(default=None, description="查詢日期 YYYYMMDD，預設為最近交易日"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    """取得指定日期各類股的三大法人買賣超彙總，按合計買超由高到低排序。"""
+    from datetime import date as date_type, datetime
+    from app.models.sector_flow import SECTOR_FLOW_COLLECTION
+
+    if date:
+        target_str = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+    else:
+        # 取最新的一筆
+        doc = await db[SECTOR_FLOW_COLLECTION].find_one(
+            {}, {"_id": 0}, sort=[("date", -1)]
+        )
+        if doc:
+            return {"success": True, "date": doc["date"], "data": doc["sectors"], "total": len(doc["sectors"])}
+
+        # 沒有快取，即時抓取
+        from app.services.sector_flow import fetch_sector_flow
+        target = date_type.today()
+        data = await fetch_sector_flow(target)
+        return {"success": True, "date": target.strftime("%Y-%m-%d"), "data": data, "total": len(data)}
+
+    # 指定日期查詢
+    doc = await db[SECTOR_FLOW_COLLECTION].find_one(
+        {"date": target_str}, {"_id": 0}
+    )
+    if doc:
+        return {"success": True, "date": doc["date"], "data": doc["sectors"], "total": len(doc["sectors"])}
+
+    # 沒快取，即時抓取
+    from app.services.sector_flow import fetch_sector_flow
+    target = datetime.strptime(date, "%Y%m%d").date()
+    data = await fetch_sector_flow(target)
+    return {"success": True, "date": target.strftime("%Y-%m-%d"), "data": data, "total": len(data)}
